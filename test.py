@@ -626,16 +626,43 @@ def main(Token, TradingSymbol):
     # Calculating Gap presence, Gap-exit, Gap-entry for 15min interval
     checkgap = check_gap(int15_test_df, int15_df)
 
+
+
+    def check_target(zone_df):
+        target = 0
+        stop_loss = 0
+        if not zone_df.empty:
+            if zone_df.at[0,'zonetype'] == 'supply':
+                stop_loss = zone_df.at[0,'zonehigh']
+                for i in range(len(zone_df)):
+                    if zone_df.at[i,'zonetype'] == 'demand':
+                        target = zone_df.at[i,'zonehigh']
+                        break
+            elif zone_df.at[0,'zonetype'] == 'demand':
+                stop_loss = zone_df.at[0,'zonelow']
+                for i in range(len(zone_df)):
+                    if zone_df.at[i,'zonetype'] == 'supply':
+                        target = zone_df.at[i,'zonelow']
+                        break
+                    
+        return [target, stop_loss]
+
+    Target = check_target(zone_daily_df)[0]
+    Stop_Loss = check_target(zone_daily_df)[1]
+
+
+
     # List of columns present in final Dataframe
     columns = [
         'Script', 'Date', 'Ltp_Price', 'High_tf_trend', 'Intermediate_tf_trend',
         'Low_tf_trend', 'Signal_type', 'Nearest_zone', 'Pattern', 'Test', 'Location_Curve',
         'Leg_in_candle', 'Base', 'Leg_out_candle', 'Zone_high',
-        'Zone_low', 'Reward', 'Risk', 'Eql_Eqh_int15', 'Eql_Eqh_int125', 'Eql_Eqh_daily', 'int15_eq_high', 'int125_eq_high', 'daily_eq_high', 'int15_eq_low', 'int125_eq_low', 'daily_eq_low', 'Liq_high', 'Liq_low', 'Gap', 'Gap_exit', 'Gap_entry'
+        'Zone_low', 'Reward', 'Risk', 'Eql_Eqh_int15', 'Eql_Eqh_int125', 'Eql_Eqh_daily', 'int15_eq_high', 'int125_eq_high', 'daily_eq_high', 'int15_eq_low', 'int125_eq_low', 'daily_eq_low', 'Liq_high', 'Liq_low', 'Gap', 'Gap_exit', 'Gap_entry', 'Entry_Price', 'Target', 'Stop_Loss', 'Current_Panel'
     ]
 
     # Calculating Remaining Values required for Final Dataframe
     Date = df.iloc[-1]['time']
+    Ltp = daily_df.iloc[-1]['intc']
     Nearest_zone = daily_test_df.iloc[0]['zonetype']
     Pattern = daily_test_df.iloc[0]['zonepattern']
     Test = daily_test_df.iloc[0]['test']
@@ -657,7 +684,7 @@ def main(Token, TradingSymbol):
     # Plotting the values as a row for Final Dataframe
 
     new_row = [
-        TradingSymbol, Date, "NA", daily_trend, int125_trend, int15_trend, signal_type, Nearest_zone, Pattern, Test, curve, Legin, Basecount, Legout, Zonehigh, Zonelow, Reward, Risk, int15_eq, int125_eq, daily_eq, int15_eqhigh, int125_eqhigh, daily_eqhigh, int15_eqlow, int125_eqlow, daily_eqlow, Liq_high, Liq_low, Gap, Gap_Exit, Gap_Entry
+        TradingSymbol, Date, Ltp, daily_trend, int125_trend, int15_trend, signal_type, Nearest_zone, Pattern, Test, curve, Legin, Basecount, Legout, Zonehigh, Zonelow, Reward, Risk, int15_eq, int125_eq, daily_eq, int15_eqhigh, int125_eqhigh, daily_eqhigh, int15_eqlow, int125_eqlow, daily_eqlow, Liq_high, Liq_low, Gap, Gap_Exit, Gap_Entry, Ltp, Target, Stop_Loss, 0
     ]
 
     # Making a dctionary format out of the columns and row-values
